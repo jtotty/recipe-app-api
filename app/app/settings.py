@@ -130,4 +130,4 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Use the custom user model created in core
-AUTH_USER_MODEL = 'core.user'
+AUTH_USER_MODEL = 'core.User'
