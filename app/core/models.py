@@ -63,13 +63,24 @@ class Recipe(models.Model):
         return self.title
 
 
+# class Tag(models.Model):
+#     """Tag for filtering recipes."""
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#     )
+#     name = models.CharField(max_length=255)
+
+#     def __str__(self):
+#         return self.name
+
 class Tag(models.Model):
-    """Tag for filtering recipes."""
-    name = models.CharField(max_length=255)
+    """Tag object."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
