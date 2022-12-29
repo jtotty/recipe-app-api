@@ -25,6 +25,7 @@ def detail_url(recipe_id):
     """Create and return a recipe detail URL."""
     return reverse('recipe:recipe-detail', args=[recipe_id])
 
+
 def create_recipe(user, **params):
     """Create and return a sample recipe."""
     defaults = {
@@ -38,6 +39,7 @@ def create_recipe(user, **params):
 
     recipe = Recipe.objects.create(user=user, **defaults)
     return recipe
+
 
 def create_user(**params):
     """Create and return a new user."""
@@ -165,7 +167,10 @@ class PrivateRecipeApiTests(TestCase):
 
     def test_update_user_returns_error(self):
         """Test updating the recipe's user results in an error."""
-        not_the_owner = create_user(email='user3@example.com', password='testpass1234')
+        not_the_owner = create_user(
+            email='user3@example.com',
+            password='testpass1234'
+        )
         recipe = create_recipe(user=self.user)
 
         payload = {'user': not_the_owner.id}
@@ -187,11 +192,15 @@ class PrivateRecipeApiTests(TestCase):
 
     def test_delete_other_users_recipe_error(self):
         """Test trying to delete a different user's recipe returns error."""
-        new_user = create_user(email='user4@example.com', password='testpass1234')
+        new_user = create_user(
+            email='user4@example.com',
+            password='testpass1234'
+        )
         recipe = create_recipe(user=new_user)
 
         url = detail_url(recipe.id)
-        res = self.client.delete(url) # self.client refers to authenticated user
+        # self.client refers to authenticated user
+        res = self.client.delete(url)
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Recipe.objects.filter(id=recipe.id).exists())

@@ -16,9 +16,15 @@ from recipe.serializers import TagSerializer
 TAGS_URL = reverse('recipe:tag-list')
 
 
+def detail_url(tag_id):
+    """Create and return a tag detail url."""
+    return reverse('recipe:tag-detail', args=[tag_id])
+
+
 def create_user(email='user@example.com', password='secret123'):
     """Create and return a new user."""
     return get_user_model().objects.create_user(email, password)
+
 
 def create_tag(user, name='TagSample'):
     """Create and return a sample tag."""
@@ -44,7 +50,7 @@ class PrivateTagsApiTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = create_user(email='authuser@example.com', password='test123')
+        self.user = create_user('authuser@example.com', 'test123')
         self.client.force_authenticate(self.user)
 
     def test_retrieve_tags(self):
@@ -53,9 +59,9 @@ class PrivateTagsApiTests(TestCase):
         create_tag(user=self.user, name='Dessert')
 
         res = self.client.get(TAGS_URL)
-
         tags = Tag.objects.all().order_by('-name')
         serializer = TagSerializer(tags, many=True)
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -64,10 +70,30 @@ class PrivateTagsApiTests(TestCase):
         user2 = create_user(email='user2@example.com')
         create_tag(user=user2, name='Fruity')
         tag = create_tag(user=self.user, name='Comfort Food')
-
         res = self.client.get(TAGS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['name'], tag.name)
         self.assertEqual(res.data[0]['id'], tag.id)
+
+    def test_update_tag(self):
+        """Test updating a tag."""
+        tag = create_tag(user=self.user, name='After Dinner')
+        payload = {'name': 'Dessert'}
+        url = detail_url(tag.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        tag.refresh_from_db()
+        self.assertEqual(tag.name, payload['name'])
+
+    def test_delete_tag(self):
+        """TEst deleting a tag."""
+        tag = create_tag(user=self.user, name='After Dinner')
+        url = detail_url(tag.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        tags = Tag.objects.filter(user=self.user)
+        self.assertFalse(tags.exists())
